@@ -1,0 +1,48 @@
+# byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# tests and coverage
+*.pytest_cache
+.coverage
+
+# database & logs
+*.db
+*.sqlite3
+*.log
+celerybeat-schedule
+celerybeat-schedule.db
+offer_log*
+black_list_error_log*
+
+# venv
+.venv
+.env
+.idea
+venv/
+
+# other
+.DS_Store
+
+# javascript
+package-lock.json
+
+staticfiles
+media
+static
+!staticfiles/.gitkeep 
+.vscode/symbols.json
+
+apps/static/assets/node_modules
+apps/static/assets/yarn.lock
+apps/static/assets/.temp
+/django_static/
+.idea/
+poetry.lock
+.continue
+/.aiignore
+/.aiassistant
+/.qwen
+/.claude
+/media
+/models
