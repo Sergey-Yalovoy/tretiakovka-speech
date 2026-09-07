@@ -54,5 +54,5 @@ class Author(Base):
 
     artworks: Mapped[list["Artwork"]] = relationship(
         secondary="artwork_authors",
-        back_populates="authors",
+        viewonly=True,
     )

@@ -1,5 +1,6 @@
 import httpx
 
+from app.config import get_settings
 from app.tretyakov.schemas import (
     TretyakovGalleryDetail,
     TretyakovGalleryResponse,
@@ -7,13 +8,41 @@ from app.tretyakov.schemas import (
 
 
 class TretyakovClient:
-    BASE_URL = "https://my.tretyakov.ru/api/v1"
 
     def __init__(
             self,
-            client: httpx.AsyncClient,
+            base_url: str | None = None,
+            timeout: float | None = None,
+            client: httpx.AsyncClient | None = None,
     ):
-        self.client = client
+        settings = get_settings()
+
+        self._base_url = (
+                base_url
+                or settings.tretyakov_base_url
+        ).rstrip("/")
+
+        self._owns_client = client is None
+
+        self.client = client or httpx.AsyncClient(
+            base_url=self._base_url,
+            timeout=timeout or settings.http_timeout,
+            headers={
+                "Accept": "application/json",
+                "User-Agent": "tretyakov-speech/1.0",
+            },
+            follow_redirects=True,
+        )
+
+    async def aclose(self) -> None:
+        if self._owns_client:
+            await self.client.aclose()
+
+    async def __aenter__(self) -> "TretyakovClient":
+        return self
+
+    async def __aexit__(self, *exc_info: object) -> None:
+        await self.aclose()
 
     async def gallery(
             self,
@@ -22,11 +51,10 @@ class TretyakovClient:
             page_size: int = 18,
             authors: list[int] | None = None,
             styles: list[int] | None = None,
-            categories: list[int] | None = None,
             periods: list[str] | None = None,
             sort: str = "",
             order: str = "",
-            lang: str = "ru",
+            lang: str | None = None,
     ) -> TretyakovGalleryResponse:
 
         params: list[tuple[str, str]] = [
@@ -34,7 +62,7 @@ class TretyakovClient:
             ("pageSize", str(page_size)),
             ("sort", sort),
             ("order", order),
-            ("lang", lang),
+            ("lang", lang or get_settings().tretyakov_lang),
         ]
 
         for author_id in authors or []:
@@ -45,11 +73,6 @@ class TretyakovClient:
         for style_id in styles or []:
             params.append(
                 ("filter[style][]", str(style_id))
-            )
-
-        for category_id in categories or []:
-            params.append(
-                ("filter[categories][]", str(category_id))
             )
 
         for period in periods or []:
@@ -72,14 +95,14 @@ class TretyakovClient:
             self,
             artwork_id: int,
             *,
-            lang: str = "ru",
-    ) -> TretyakovGalleryDetail:
+            lang: str | None = None,
+    ) -> TretyakovGalleryDetail | None:
 
         response = await self.client.get(
             "/gallery/getById/",
             params={
                 "id": artwork_id,
-                "lang": lang,
+                "lang": lang or get_settings().tretyakov_lang,
             },
         )
 
@@ -88,9 +111,7 @@ class TretyakovClient:
         payload = response.json()
 
         if not payload.get("status"):
-            raise LookupError(
-                f"Artwork {artwork_id} not found"
-            )
+            return None
 
         return TretyakovGalleryDetail.model_validate(
             payload["data"]

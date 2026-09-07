@@ -1,4 +1,14 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+
+def _coerce_int(value: object) -> object:
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+
+    return value
+
+
+CoerceId = field_validator("id", mode="before")(_coerce_int)
 
 
 class TretyakovFilterAuthor(BaseModel):
@@ -70,6 +80,9 @@ class TretyakovAuthor(BaseModel):
     id: int
     code: str | None = None
     name: str
+    years: str | None = None
+
+    _normalize_id = CoerceId
 
     property_im_value: str | None = Field(
         default=None,
@@ -107,6 +120,8 @@ class TretyakovStyle(BaseModel):
     code: str | None = None
     name: str
 
+    _normalize_id = CoerceId
+
     property_name_en_value: str | None = Field(
         default=None,
         alias="propertyNameEnValue",
@@ -128,10 +143,27 @@ class TretyakovSize(BaseModel):
     depth: str | None = None
 
 
+def _none_to_list(value: object) -> object:
+    if value is None:
+        return []
+
+    return value
+
+
 class TretyakovGalleryItem(BaseModel):
     id: int
     code: str | None = None
     name: str
+
+    _normalize_lists = field_validator(
+        "author",
+        "style",
+        "picture",
+        "picture_big",
+        "picture_thumb",
+        "picture_thumb2",
+        mode="before",
+    )(_none_to_list)
 
     author: list[TretyakovAuthor] = Field(
         default_factory=list,
@@ -211,11 +243,15 @@ class TretyakovMaterial(BaseModel):
     code: str | None = None
     name: str
 
+    _normalize_id = CoerceId
+
 
 class TretyakovTechnique(BaseModel):
     id: int
     code: str | None = None
     name: str
+
+    _normalize_id = CoerceId
 
 
 class TretyakovBuyTicketLink(BaseModel):
@@ -230,7 +266,7 @@ class TretyakovBuyTicketLink(BaseModel):
 
 
 class TretyakovCompilation(BaseModel):
-    is_set: bool | None = Field(
+    is_set: str | None = Field(
         default=None,
         alias="isSet",
     )
@@ -266,6 +302,17 @@ class TretyakovPano360(BaseModel):
 class TretyakovGalleryDetail(BaseModel):
     id: int
     name: str
+
+    _normalize_lists = field_validator(
+        "author",
+        "material",
+        "technique",
+        "picture",
+        "picture_big",
+        "picture_thumb",
+        "picture_thumb2",
+        mode="before",
+    )(_none_to_list)
 
     picture: list[str] = Field(
         default_factory=list,

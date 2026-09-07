@@ -5,3 +5,4 @@ from dataclasses import dataclass
 class StoredAudio:
     key: str
     content_type: str
+    file_id: str

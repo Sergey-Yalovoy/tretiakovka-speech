@@ -11,16 +11,15 @@ from tts.pipeline import TTSPipeline
 
 
 class SileroTTS:
-
     MODEL_URL = (
         "https://models.silero.ai/models/tts/ru/v5_ru.pt"
     )
 
     def __init__(
-        self,
-        model_path: str = "models/v5_5_ru.pt",
-        speaker: str = "baya",
-        max_chunk_size: int = 1000,
+            self,
+            model_path: str = "models/v5_5_ru.pt",
+            speaker: str = "baya",
+            max_chunk_size: int = 1000,
     ):
         self.model_path = Path(model_path)
         self.speaker = speaker
@@ -58,14 +57,28 @@ class SileroTTS:
             exist_ok=True,
         )
 
+        partial_path = (
+            self.model_path
+            .with_suffix(".pt.part")
+        )
+
         torch.hub.download_url_to_file(
             self.MODEL_URL,
-            str(self.model_path),
+            str(partial_path),
+        )
+
+        # Атомарная подмена: параллельные процессы
+        # всегда видят либо отсутствие файла, либо целиком готовый.
+        import os
+
+        os.replace(
+            partial_path,
+            self.model_path,
         )
 
     def _split_text(
-        self,
-        text: str,
+            self,
+            text: str,
     ) -> list[str]:
 
         text = re.sub(
@@ -98,10 +111,10 @@ class SileroTTS:
                     current = sentence
 
                 elif (
-                    len(current)
-                    + 1
-                    + len(sentence)
-                    <= self.max_chunk_size
+                        len(current)
+                        + 1
+                        + len(sentence)
+                        <= self.max_chunk_size
                 ):
                     current += " " + sentence
 
@@ -127,8 +140,8 @@ class SileroTTS:
         return chunks
 
     def _split_long_sentence(
-        self,
-        sentence: str,
+            self,
+            sentence: str,
     ) -> list[str]:
 
         words = sentence.split()
@@ -159,8 +172,8 @@ class SileroTTS:
         return chunks
 
     def _normalize_text(
-        self,
-        text: str,
+            self,
+            text: str,
     ) -> str:
 
         options = NormalizeOptions.tts(
@@ -174,10 +187,10 @@ class SileroTTS:
         )
 
     def _generate_chunk_from_ssml(
-        self,
-        text: str,
-        output_path: Path,
-        sample_rate: int,
+            self,
+            text: str,
+            output_path: Path,
+            sample_rate: int,
     ) -> None:
 
         self.model.save_wav(
@@ -188,9 +201,9 @@ class SileroTTS:
         )
 
     def _merge_wav_files(
-        self,
-        input_paths: list[Path],
-        output_path: Path,
+            self,
+            input_paths: list[Path],
+            output_path: Path,
     ) -> None:
 
         if not input_paths:
@@ -204,17 +217,16 @@ class SileroTTS:
         )
 
         with wave.open(
-            str(input_paths[0]),
-            "rb",
+                str(input_paths[0]),
+                "rb",
         ) as first:
 
             params = first.getparams()
 
             with wave.open(
-                str(output_path),
-                "wb",
+                    str(output_path),
+                    "wb",
             ) as output:
-
                 output.setparams(params)
 
                 output.writeframes(
@@ -224,12 +236,10 @@ class SileroTTS:
                 )
 
                 for path in input_paths[1:]:
-
                     with wave.open(
-                        str(path),
-                        "rb",
+                            str(path),
+                            "rb",
                     ) as chunk:
-
                         output.writeframes(
                             chunk.readframes(
                                 chunk.getnframes()
@@ -237,10 +247,10 @@ class SileroTTS:
                         )
 
     def synthesize_to_file(
-        self,
-        text: str,
-        output_path: str | Path,
-        sample_rate: int = 48_000,
+            self,
+            text: str,
+            output_path: str | Path,
+            sample_rate: int = 48_000,
     ) -> Path:
 
         text = text.strip()
@@ -265,7 +275,6 @@ class SileroTTS:
         ssml_chunks: list[str] = []
 
         for chunk in chunks:
-
             ssml = self.tts_pipeline.process(
                 chunk
             )
@@ -275,7 +284,6 @@ class SileroTTS:
         # 4. Single chunk
 
         if len(ssml_chunks) == 1:
-
             self._generate_chunk_from_ssml(
                 text=ssml_chunks[0],
                 output_path=output_path,
@@ -287,8 +295,8 @@ class SileroTTS:
         # 5. Multiple chunks
 
         chunks_dir = (
-            output_path.parent
-            / f".{output_path.stem}_chunks"
+                output_path.parent
+                / f".{output_path.stem}_chunks"
         )
 
         chunks_dir.mkdir(
@@ -301,12 +309,11 @@ class SileroTTS:
         try:
 
             for index, ssml in enumerate(
-                ssml_chunks
+                    ssml_chunks
             ):
-
                 chunk_path = (
-                    chunks_dir
-                    / f"chunk_{index:04d}.wav"
+                        chunks_dir
+                        / f"chunk_{index:04d}.wav"
                 )
 
                 self._generate_chunk_from_ssml(

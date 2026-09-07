@@ -7,33 +7,36 @@ from tts.silero_tts import SileroTTS
 from .models import StoredAudio
 
 
-
 class AudioService:
 
     def __init__(
-        self,
-        tts: SileroTTS,
-        storage: FileStorage,
+            self,
+            tts: SileroTTS,
+            storage: FileStorage,
     ):
         self.tts = tts
         self.storage = storage
 
     def generate(
-        self,
-        text: str,
-        sample_rate: int = 48_000,
-    ) -> StoredAudio:
+            self,
+            text: str,
+            speaker: str,
+            file_id: str,
+            sample_rate: int = 48_000
 
+    ) -> StoredAudio:
+        if not file_id:
+            file_id = f"{str(uuid4())}"
         key = (
             f"audio/"
-            f"{uuid4()}.wav"
+            f"{speaker}/"
+            f"{file_id}-{speaker}.wav"
         )
 
         with tempfile.TemporaryDirectory() as temp_dir:
-
             temporary_path = (
-                Path(temp_dir)
-                / "audio.wav"
+                    Path(temp_dir)
+                    / "audio.wav"
             )
 
             self.tts.synthesize_to_file(
@@ -50,6 +53,6 @@ class AudioService:
 
         return StoredAudio(
             key=stored.key,
+            file_id=file_id,
             content_type=stored.content_type,
         )
-

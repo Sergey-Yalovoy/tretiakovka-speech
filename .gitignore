@@ -46,3 +46,4 @@ poetry.lock
 /.claude
 /media
 /models
+/graphify-out

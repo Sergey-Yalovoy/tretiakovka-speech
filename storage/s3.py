@@ -14,6 +14,8 @@ class S3FileStorage(FileStorage):
         endpoint_url: str | None = None,
         region_name: str | None = None,
         public_url: str | None = None,
+        access_key_id: str | None = None,
+        secret_access_key: str | None = None,
     ):
         self.bucket = bucket
 
@@ -27,6 +29,8 @@ class S3FileStorage(FileStorage):
             "s3",
             endpoint_url=endpoint_url,
             region_name=region_name,
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key,
         )
 
     def save(

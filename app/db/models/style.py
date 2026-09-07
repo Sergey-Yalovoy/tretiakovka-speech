@@ -36,5 +36,5 @@ class Style(Base):
 
     artworks: Mapped[list["Artwork"]] = relationship(
         secondary="artwork_styles",
-        back_populates="styles",
+        viewonly=True,
     )

@@ -28,5 +28,5 @@ class Technique(Base):
 
     artworks: Mapped[list["Artwork"]] = relationship(
         secondary="artwork_techniques",
-        back_populates="techniques",
+        viewonly=True,
     )
