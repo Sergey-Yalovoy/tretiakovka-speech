@@ -150,6 +150,12 @@ def _none_to_list(value: object) -> object:
     return value
 
 
+def _list_to_str(value: object) -> object:
+    if isinstance(value, list) and value:
+        return value[0]
+    return None
+
+
 class TretyakovGalleryItem(BaseModel):
     id: int
     code: str | None = None
@@ -287,6 +293,10 @@ class TretyakovCompilation(BaseModel):
 
 
 class TretyakovPano360(BaseModel):
+    _normalize_lists = field_validator(
+        "pano360",
+        mode="before",
+    )(_list_to_str)
     is_set: bool | None = Field(
         default=None,
         alias="isSet",

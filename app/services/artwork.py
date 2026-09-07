@@ -1,6 +1,7 @@
 import html
 import re
 
+import nh3
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -114,7 +115,12 @@ class ArtworkService:
         artwork = await session.get(Artwork, item.id)
 
         if artwork is None:
-            artwork = Artwork(id=item.id, name=item.name)
+            artwork = Artwork(id=item.id, name=item.name,
+                              authors=[],
+                              materials=[],
+                              techniques=[],
+                              styles=[]
+                              )
             session.add(artwork)
 
         artwork.code = item.code
@@ -128,14 +134,15 @@ class ArtworkService:
             artwork.height = item.size.height
             artwork.width = item.size.width
             artwork.depth = item.size.depth
-
+        unique_authors = {author.id: author for author in item.author}.values()
+        unique_style = {style.id: style for style in item.style}.values()
         artwork.authors = [
             await self._author(session, author)
-            for author in item.author
+            for author in unique_authors
         ]
         artwork.styles = [
             await self._style(session, style)
-            for style in item.style
+            for style in unique_style
         ]
 
         return artwork
