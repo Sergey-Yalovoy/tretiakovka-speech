@@ -12,7 +12,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -29,7 +29,7 @@ services:
     volumes:
       - miniodata:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: [ "CMD", "mc", "ready", "local" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -74,7 +74,7 @@ services:
       minio-init:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8000/health" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -97,6 +97,18 @@ services:
         condition: service_healthy
       api:
         condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    profiles:
+      - backend
+    ports:
+      - "${REDIS_PORT}:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   pgdata:
