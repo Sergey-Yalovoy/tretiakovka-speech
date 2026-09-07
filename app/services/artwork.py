@@ -1,7 +1,6 @@
 import html
 import re
 
-import nh3
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,6 +26,7 @@ def strip_html(text: str | None) -> str:
     plain = re.sub(r"\s*\n\s*", "\n", plain)
 
     return plain.strip()
+
 
 def new_strip_html(text: str | None) -> str:
     if not text:

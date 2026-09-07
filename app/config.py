@@ -75,6 +75,30 @@ class Settings(BaseSettings):
         populate_by_name=True,
     )
 
+    redis_host: str = Field(default="localhost", alias="REDIS_HOST")
+    redis_port: int = Field(default=6379, alias="REDIS_PORT")
+    redis_db: int = Field(default=0, alias="REDIS_DB")
+    redis_password: SecretStr | None = Field(
+        default=None,
+        alias="REDIS_PASSWORD",
+    )
+
+    @property
+    def redis_url(self) -> str:
+        if self.redis_password:
+            password = self.redis_password.get_secret_value()
+            return (
+                f"redis://:{password}@"
+                f"{self.redis_host}:{self.redis_port}/"
+                f"{self.redis_db}"
+            )
+
+        return (
+            f"redis://"
+            f"{self.redis_host}:{self.redis_port}/"
+            f"{self.redis_db}"
+        )
+
     @property
     def db_url(self) -> str:
         password = self.db_password.get_secret_value()

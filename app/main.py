@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from redis_fastapi import FastAPIRedis, RedisSettings
 
 from app.api.artworks import router as artworks_router
 from app.api.filters import router as filters_router
+from app.config import get_settings
 from app.deps import init_runtime, shutdown_runtime
 from app.logger import get_logger
 
@@ -28,6 +30,8 @@ app = FastAPI(
     version="0.2.0",
     lifespan=lifespan,
 )
+settings = get_settings()
+FastAPIRedis(app).lifespan().caching()
 
 app.include_router(artworks_router)
 app.include_router(filters_router)

@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from redis_fastapi import cache
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_session
@@ -22,6 +23,7 @@ router = APIRouter(
 
 @router.get(
     "",
+    dependencies=[Depends(cache(ttl=300))],
     response_model=FiltersResponse,
     summary="Справочники для фильтров каталога",
 )

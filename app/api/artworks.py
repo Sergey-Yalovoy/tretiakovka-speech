@@ -21,9 +21,7 @@ from app.schemas.artwork import (
     ArtworkListResponse,
     FindArtworkRequest,
     MaterialResponse,
-    StyleResponse,
     TechniqueResponse,
-    AuthorResponse,
 )
 from app.services.artwork import ArtworkService, build_tts_text
 from app.services.audio_guide import AudioGuideService
