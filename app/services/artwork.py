@@ -184,8 +184,11 @@ class ArtworkService:
         artwork.placement = detail.placement or None
         artwork.creat = detail.creat
         artwork.creat_f = detail.creat_f
-
-        artwork.description = detail.description
+        if artwork.description != detail.description:
+            artwork.description_changed = True
+            artwork.description = detail.description
+        else:
+            artwork.description_changed = False
         artwork.facts = detail.facts or None
 
         artwork.authors = [

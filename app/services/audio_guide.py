@@ -86,7 +86,7 @@ class AudioGuideService:
 
         key = self.get_audio_key(artwork, speaker)
 
-        if key and await self._exists(key):
+        if key and await self._exists(key) and not artwork.description_changed:
             return key
 
         async with self._lock_for(artwork.id):

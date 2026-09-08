@@ -161,13 +161,14 @@ async def get_artwork(
             default=False,
             description="Сгенерировать озвучку, если её ещё нет",
         ),
+        voice: Literal['aidar', 'baya', 'kseniya', 'xenia', 'eugene'] = Query(default='baya'),
 ):
     artwork = await _get_artwork_or_404(session, artwork_id)
 
     audio = _audio()
 
     if with_audio and artwork.audio_key is None:
-        await audio.ensure_audio(session, artwork)
+        await audio.ensure_audio(session, artwork, voice)
 
     return _detail_item(artwork, audio)
 

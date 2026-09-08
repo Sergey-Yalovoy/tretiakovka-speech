@@ -18,13 +18,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
-
 if TYPE_CHECKING:
     from app.db.models.author import Author
     from app.db.models.material import Material
     from app.db.models.style import Style
     from app.db.models.technique import Technique
-
 
 artwork_authors = Table(
     "artwork_authors",
@@ -49,7 +47,6 @@ artwork_authors = Table(
     ),
 )
 
-
 artwork_styles = Table(
     "artwork_styles",
     Base.metadata,
@@ -73,7 +70,6 @@ artwork_styles = Table(
     ),
 )
 
-
 artwork_materials = Table(
     "artwork_materials",
     Base.metadata,
@@ -96,7 +92,6 @@ artwork_materials = Table(
         primary_key=True,
     ),
 )
-
 
 artwork_techniques = Table(
     "artwork_techniques",
@@ -207,6 +202,10 @@ class Artwork(Base):
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False,
+    )
+
+    description_changed: Mapped[bool] = mapped_column(
+        default=False,
     )
 
     authors: Mapped[list["Author"]] = relationship(
