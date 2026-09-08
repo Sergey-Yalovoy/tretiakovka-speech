@@ -64,7 +64,7 @@ class AudioGuideService:
         return self._artwork_locks[artwork_id]
 
     def get_audio_key(self, artwork: Artwork, speaker: str) -> str | None:
-        return f"audio/{speaker}/{artwork.audio_key}-{speaker}.wav"
+        return f"audio/{speaker}/{artwork.audio_key}-{speaker}.ogg"
 
     async def ensure_audio(
             self,
