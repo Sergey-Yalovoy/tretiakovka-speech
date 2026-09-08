@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractstaticmethod
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -63,4 +63,8 @@ class FileStorage(ABC):
         end: int | None = None,
         chunk_size: int = 1024 * 1024,
     ) -> Iterator[bytes]:
+        raise NotImplementedError
+
+    @staticmethod
+    def get_path_key(key, speaker: str) -> str:
         raise NotImplementedError

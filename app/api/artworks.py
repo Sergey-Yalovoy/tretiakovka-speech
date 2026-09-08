@@ -70,6 +70,7 @@ def _list_item(
 def _detail_item(
         artwork,
         audio: AudioGuideService,
+        speaker: str | None = None
 ) -> ArtworkDetailResponse:
     base = _list_item(artwork, audio).model_dump()
 
@@ -85,6 +86,7 @@ def _detail_item(
         ],
         facts=artwork.facts,
         description=artwork.description,
+        audio_url=audio.url(artwork.audio_key, speaker)
     )
 
     return ArtworkDetailResponse(**base)
@@ -161,16 +163,16 @@ async def get_artwork(
             default=False,
             description="Сгенерировать озвучку, если её ещё нет",
         ),
-        voice: Literal['aidar', 'baya', 'kseniya', 'xenia', 'eugene'] = Query(default='baya'),
+        speaker: Literal['aidar', 'baya', 'kseniya', 'xenia', 'eugene'] = Query(default='baya'),
 ):
     artwork = await _get_artwork_or_404(session, artwork_id)
 
     audio = _audio()
 
-    if with_audio and artwork.audio_key is None:
-        await audio.ensure_audio(session, artwork, voice)
+    if with_audio:
+        await audio.ensure_audio(session, artwork, speaker)
 
-    return _detail_item(artwork, audio)
+    return _detail_item(artwork, audio, speaker)
 
 
 @router.post(
@@ -182,7 +184,7 @@ async def find_artwork(
         payload: FindArtworkRequest,
         session: Annotated[AsyncSession, Depends(get_session)],
         with_audio: bool = Query(default=False),
-        voice: Literal['aidar', 'baya', 'kseniya', 'xenia', 'eugene'] = Query(default='baya'),
+        speaker: Literal['aidar', 'baya', 'kseniya', 'xenia', 'eugene'] = Query(default='baya'),
 ):
     match = ARTWORK_URL_RE.match(payload.url)
 
@@ -210,9 +212,9 @@ async def find_artwork(
     audio = _audio()
 
     if with_audio and artwork.audio_key is None:
-        await audio.ensure_audio(session, artwork, speaker=voice)
+        await audio.ensure_audio(session, artwork, speaker)
 
-    return _detail_item(artwork, audio)
+    return _detail_item(artwork, audio, speaker)
 
 
 def _parse_range(

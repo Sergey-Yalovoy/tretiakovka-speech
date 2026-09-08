@@ -9,13 +9,13 @@ from .base import FileStorage, StorageObject
 class S3FileStorage(FileStorage):
 
     def __init__(
-        self,
-        bucket: str,
-        endpoint_url: str | None = None,
-        region_name: str | None = None,
-        public_url: str | None = None,
-        access_key_id: str | None = None,
-        secret_access_key: str | None = None,
+            self,
+            bucket: str,
+            endpoint_url: str | None = None,
+            region_name: str | None = None,
+            public_url: str | None = None,
+            access_key_id: str | None = None,
+            secret_access_key: str | None = None,
     ):
         self.bucket = bucket
 
@@ -34,10 +34,10 @@ class S3FileStorage(FileStorage):
         )
 
     def save(
-        self,
-        source: Path,
-        key: str,
-        content_type: str,
+            self,
+            source: Path,
+            key: str,
+            content_type: str,
     ) -> StorageObject:
 
         size = source.stat().st_size
@@ -58,8 +58,8 @@ class S3FileStorage(FileStorage):
         )
 
     def delete(
-        self,
-        key: str,
+            self,
+            key: str,
     ) -> None:
 
         self.client.delete_object(
@@ -68,8 +68,8 @@ class S3FileStorage(FileStorage):
         )
 
     def stat(
-        self,
-        key: str,
+            self,
+            key: str,
     ) -> StorageObject:
 
         response = self.client.head_object(
@@ -86,10 +86,14 @@ class S3FileStorage(FileStorage):
             size=response["ContentLength"],
         )
 
+    @staticmethod
+    def get_path_key(key, speaker: str) -> str:
+        return f"{speaker}/{key}.ogg"
+
     def get_url(
-        self,
-        key: str,
-        expires: int = 3600,
+            self,
+            key: str,
+            expires: int = 3600,
     ) -> str:
 
         if self.public_url:
@@ -108,11 +112,11 @@ class S3FileStorage(FileStorage):
         )
 
     def stream(
-        self,
-        key: str,
-        start: int = 0,
-        end: int | None = None,
-        chunk_size: int = 1024 * 1024,
+            self,
+            key: str,
+            start: int = 0,
+            end: int | None = None,
+            chunk_size: int = 1024 * 1024,
     ) -> Iterator[bytes]:
 
         byte_range = None

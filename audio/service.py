@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from audio.models import StoredAudio
 from storage.base import FileStorage
+from storage.s3 import S3FileStorage
 from tts.silero_tts import SileroTTS
 
 
@@ -28,7 +29,7 @@ class AudioService:
             file_id = str(uuid4())
 
         # Сохраняем сразу в .ogg
-        key = f"audio/{speaker}/{file_id}-{speaker}.ogg"
+        key = self.storage.get_path_key(file_id, speaker)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir) / "audio.ogg"

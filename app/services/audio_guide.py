@@ -9,6 +9,7 @@ from app.db.models import Artwork
 from app.logger import get_logger
 from audio.service import AudioService
 from storage.base import FileStorage
+from storage.s3 import S3FileStorage
 from tts.silero_tts import SileroTTS
 
 from .artwork import build_tts_text
@@ -63,9 +64,6 @@ class AudioGuideService:
 
         return self._artwork_locks[artwork_id]
 
-    def get_audio_key(self, artwork: Artwork, speaker: str) -> str | None:
-        return f"audio/{speaker}/{artwork.audio_key}-{speaker}.ogg"
-
     async def ensure_audio(
             self,
             session: AsyncSession,
@@ -84,7 +82,7 @@ class AudioGuideService:
         if not text:
             return None
 
-        key = self.get_audio_key(artwork, speaker)
+        key = self.storage.get_path_key(artwork.audio_key, speaker)
 
         if key and await self._exists(key) and not artwork.description_changed:
             return key
@@ -128,5 +126,15 @@ class AudioGuideService:
         except Exception:
             return False
 
-    def url(self, key: str) -> str:
-        return self.storage.get_url(key)
+    def url(self, key: str | None, speaker: str | None = None) -> str | None:
+        if key is None:
+            return None
+        key = self.storage.get_path_key(key,
+                                        speaker=speaker or self.speaker)
+        try:
+            exist = self.storage.stat(key)
+        except Exception:
+            exist = False
+        if exist:
+            return self.storage.get_url(key)
+        return None

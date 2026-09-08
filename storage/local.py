@@ -178,6 +178,10 @@ class LocalFileStorage(FileStorage):
             "application/octet-stream",
         )
 
+    @staticmethod
+    def get_path_key(key, speaker: str) -> str:
+        return f"audio/{speaker}/{key}.ogg"
+
 # example
 
 # storage = LocalAudioStorage(
