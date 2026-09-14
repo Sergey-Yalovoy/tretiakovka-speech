@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from redis_fastapi import FastAPIRedis, RedisSettings
+from starlette.middleware.cors import CORSMiddleware
 
 from app.api.artworks import router as artworks_router
 from app.api.filters import router as filters_router
@@ -29,6 +30,16 @@ app = FastAPI(
     title="Tretyakov Speech API",
     version="0.2.0",
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "*"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 settings = get_settings()
 FastAPIRedis(app).lifespan().caching()
